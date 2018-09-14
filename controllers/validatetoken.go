@@ -10,7 +10,7 @@ import (
 	"github.com/golang-es/prjecomments/models"
 )
 
-// ValidateToken valida el token del cliente
+// ValidateToken validar el token del cliente
 func ValidateToken(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var m models.Message
 	token, err := request.ParseFromRequestWithClaims(
@@ -21,6 +21,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 			return commons.PublicKey, nil
 		},
 	)
+
 	if err != nil {
 		m.Code = http.StatusUnauthorized
 		switch err.(type) {
@@ -36,18 +37,19 @@ func ValidateToken(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 				commons.DisplayMessage(w, m)
 				return
 			default:
-				m.Message = "Su token es invalido"
+				m.Message = "Su token no es válido"
 				commons.DisplayMessage(w, m)
 				return
 			}
 		}
-		if token.Valid {
-			ctx := context.WithValue(r.Context(), "user", token.Claims.(*models.Claim).User)
-			next(w, r.WithContext(ctx))
-		} else {
-			m.Code = http.StatusUnauthorized
-			m.Message = "Su token es invalido"
-			commons.DisplayMessage(w, m)
-		}
+	}
+
+	if token.Valid {
+		ctx := context.WithValue(r.Context(), "user", token.Claims.(*models.Claim).User)
+		next(w, r.WithContext(ctx))
+	} else {
+		m.Code = http.StatusUnauthorized
+		m.Message = "Su token no es válido"
+		commons.DisplayMessage(w, m)
 	}
 }
